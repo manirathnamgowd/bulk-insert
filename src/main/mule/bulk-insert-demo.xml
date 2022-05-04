@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<file:config name="File_Config" doc:name="File Config" doc:id="cf255837-043f-422b-98fa-32ad8cac8a23" />
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="896739e9-2f04-4194-9d1e-f055a9574f81" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="mulesoft66##" database="training" />
+	</db:config>
+	<flow name="bulk-insert-demoFlow" doc:id="d8df2ca0-cd63-4283-bab8-e8da4b632e79" >
+		<file:listener doc:name="On New or Updated File" doc:id="a72c248f-d416-4926-9114-83f6f05b3cbf" config-ref="File_Config" directory="C:\Mani\Files" recursive="false" outputMimeType="application/json">
+			<scheduling-strategy >
+				<fixed-frequency frequency="5" timeUnit="SECONDS" />
+			</scheduling-strategy>
+		</file:listener>
+		<logger level="INFO" doc:name="Logger" doc:id="d4d36d24-b423-4b1b-9a4e-ba6be24e0742" />
+		<db:bulk-insert doc:name="Bulk insert" doc:id="d03c8ee7-cea5-4f05-86fc-3d88c36c8416" config-ref="Database_Config">
+			<db:bulk-input-parameters ><![CDATA[#[payload map {
+	firstname: $.FirstName,
+	 lastname: $.LastName,
+	 address: $.Address,
+	 mailid: $.MailId,
+	 mobile: $.Mobile
+}]]]></db:bulk-input-parameters>
+			<db:sql ><![CDATA[insert into testing(firstname,lastname, mailid,mobile,address) values (:firstname, :lastname, :mailid, :mobile, :address);]]></db:sql>
+		</db:bulk-insert>
+		<logger level="INFO" doc:name="Logger" doc:id="e272b2ff-de94-4a39-9487-44dc8df980f5" />
+	</flow>
+</mule>
